@@ -1,6 +1,7 @@
 package org.androidtown.socket;
 
 import java.awt.Image;
+
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
@@ -10,6 +11,7 @@ import java.util.Iterator;
 import java.util.Random;
 import java.util.Set;
 import java.util.Vector;
+import java.awt.*;
 
 import javax.swing.ImageIcon;
 
@@ -17,24 +19,33 @@ public class JavaSocketServer {
 
 	public static void main(String[] args) {
 		
+		ImageIcon img = new ImageIcon("C:\\back.jpg");
+		Image sendimg = img.getImage();
+		
 		int port = 80;
 		String qr = "ok";
-		Vector<String> v_id = new Vector<String>();
+		//Vector<String> v_id = new Vector<String>();
+		HashMap<String, Login> login_id = new HashMap<String, Login>();
+		//HashMap<String, String> h_md5 = new HashMap<String, String>();
 		HashMap<String, String> h_md5 = new HashMap<String, String>();
 		
-		v_id.add("1392024");
-		v_id.add("1592017");
-		v_id.add("1591033");
-		v_id.add("1391080");
+		login_id.put("1392024", new Login("123456", "안형우"));
+		login_id.put("1592017", new Login("123456", "송정은"));
+		login_id.put("1591033", new Login("123456", "진소린"));
+		login_id.put("1391080", new Login("123456", "한경동"));
 		
-		String id = null;
-		String password = "123456";
+		Set<String> login_id_keys;
+		Iterator<String> login_id_iterator;
+		
+		
 		String temp_id = null;
 		String temp_pw = null;
 		
-		String check = null;
+		String check = "불허가";
 		String output = null;
 		String output2 = null;
+		String output_id = null;
+		String output_name = null;
 		String temp = null;
 		String scanner_id = null;
 		String scanner_md5 = null;
@@ -69,13 +80,7 @@ public class JavaSocketServer {
 				System.out.println("input2 끝 ");
 				
 				
-				/*
-				// QR코드일때만 send가 옴
-				if(input.toString().equals("send")){
-					System.out.println("kk");
-					count=1;
-				}
-				*/
+		
 				
 				if(input.toString().equals("Scanner")){
 					String[] tokenList = input2.toString().split("%3B%3B");
@@ -158,44 +163,45 @@ public class JavaSocketServer {
 				
 				// 로그인 기능
 				if(count==2){
-					System.out.println(input.toString());
-					for(int i=0; i<v_id.size(); i++){
-						id=v_id.get(i);
 					
-					if(id.equals(temp_id)){
-						if(password.equals(temp_pw)){
-					check = "허가";
-					ObjectOutputStream outstream = new ObjectOutputStream(socket.getOutputStream());
-					outstream.writeObject(check);
-					outstream.flush();
-					System.out.println("클라이언트로 보낸 데이터 : " + check);
-					id_count=1;	
-					logon_count=1;
+					login_id_keys = login_id.keySet();
+					login_id_iterator = login_id_keys.iterator();
+				
+					while(login_id_iterator.hasNext()){
+						String id_key = login_id_iterator.next();
+						String id_value = login_id.get(id_key).pw;
+						System.out.println("아이디 : " + temp_id);	
+						if(id_key.equals(temp_id)){
+							System.out.println("비번 : " + temp_pw);
+							if(id_value.equals(temp_pw)){
+								check = "허가";
+								ObjectOutputStream outstream = new ObjectOutputStream(socket.getOutputStream());
+								outstream.writeObject(check);
+								outstream.flush();
+								System.out.println("클라이언트로 보낸 데이터 : " + check);
+								id_count=1;	
+								logon_count=1;
+								outstream.close();
+								
+										}
+									}
+								}
+								if(id_count==0 && logon_count==0){
+								check = "불허가";
+								ObjectOutputStream outstream = new ObjectOutputStream(socket.getOutputStream());
+								outstream.writeObject(check);
+								outstream.flush();
+								System.out.println("클라이언트로 보낸 데이터 : " + check);
+									
+								count = 0;
+								outstream.close();
+								instream.close();
+								instream2.close();
+								socket.close();
+								}
+							
+								id_count=0;
 					
-					/*
-					instream.close();
-					outstream.close();
-					socket.close();
-					count = 0;
-					*/
-							}
-						}
-					}
-					if(id_count==0 && logon_count==0){
-					check = "불허가";
-					ObjectOutputStream outstream = new ObjectOutputStream(socket.getOutputStream());
-					outstream.writeObject(check);
-					outstream.flush();
-					System.out.println("클라이언트로 보낸 데이터 : " + check);
-						
-					
-					instream.close();
-					instream2.close();
-					outstream.close();
-					socket.close();
-					count = 0;
-					}
-					id_count=0;
 				}
 				
 				// 지문인식이 통과되었을때
@@ -214,25 +220,54 @@ public class JavaSocketServer {
 				//기존 학번에 대한 암호화값이 들어있으면 덮어씌워야함
 				
 				if(!check.equals("허가")){
-				//String output = "https://zxing.org/w/chart?cht=qr&chs=170x170&chld=L&choe=UTF-8&chl=MECARD%3AN%3A%EC%95%88%ED%98%95%EC%9A%B0%3BORG%3A%EA%B8%B0%EC%97%85%EC%9D%80%ED%96%89%3BTEL%3A"+v.get(0)+v.get(1)+"%3BURL%3Ahttp%5C%3A%2F%2Fwww.daum.net%3BEMAIL%3Adksguddn%40daum.net%3BADR%3A%EC%84%9C%EC%9A%B8%EC%8B%9C+%EA%B4%91%EC%A7%84%EA%B5%AC+%EA%B5%AC%EC%9D%98%EB%8F%99+"+v.get(2)+"01%ED%98%B8%3BNOTE%3A%EA%B0%80%EB%82%98%EB%8B%BC%3B%3F";
-				//output2 = "https://zxing.org/w/chart?cht=qr&chs=170x170&chld=L&choe=UTF-8&chl=MECARD%3AN%3Ahansung%3BORG%3Aunit%3BTEL%3A"+v.get(0)+v.get(1)+"0000000000%3BEMAIL%3Aquestion%40gmail.com%3BADR%3A5897+"+v.get(2)+"301%3BNOTE%3Anotepassword%3B%3B";
 				output2 = input.toString() + input2.toString();
 				// temp 부분은 MD5로 값 변환시킴
 				temp = de.encrypt(output2);
 				output = output2 + temp;
 				//h_md5.put(temp, temp);					//  md5(암호화)된 값을 벡터에 임시저장함
 				
-				//String iutput = "https://zxing.org/w/chart?cht=qr&chs=350x350&chld=L&choe=UTF-8&chl=MECARD%3AN%3AhanKKK%3BORG%3AHansung%3BTEL%3A00099999000%3BEMAIL%3AABC%40naver.com%3BADR%3A%EC%84%9C%EC%9A%B8%EC%8B%9C+%EA%B4%91%EC%A7%84%EA%B5%AC+301%ED%98%B8%3BNOTE%3A%EA%B0%80%EB%82%98%EB%8B%A4%EB%9D%BC%3B%3B";
+				login_id_keys = login_id.keySet();
+				login_id_iterator = login_id_keys.iterator();
+			
+				while(login_id_iterator.hasNext()){
+					String id_key = login_id_iterator.next();
+					String id_value = login_id.get(id_key).pw;
+					System.out.println("output아이디 : " + temp_id);
+					String id_key_temp = id_key + "%3B%3B";
+					if(id_key_temp.equals(temp_id)){
+						System.out.println("output준비완료 : " + temp_id);
+							output_id = id_key;
+							output_name = login_id.get(id_key).name;
+							
+						}
+					}
+						
+				
+				
+				
+				
+				
 				ObjectOutputStream outstream = new ObjectOutputStream(socket.getOutputStream());
 				outstream.writeObject(output);
 				outstream.flush();
-				System.out.println("클라이언트로 보낸 데이터3 : " + output);
+				System.out.println("클라이언트로 보낸 QR데이터 : " + output);
 				
+				ObjectOutputStream outstream2 = new ObjectOutputStream(socket.getOutputStream());
+				outstream2.writeObject(output_id);
+				outstream2.flush();
+				System.out.println("클라이언트로 보낸 학번 데이터 : " + output_id);
+				//System.out.println(de.encrypt(output));
+				
+				ObjectOutputStream outstream3 = new ObjectOutputStream(socket.getOutputStream());
+				outstream3.writeObject(output_name);
+				outstream3.flush();
+				System.out.println("클라이언트로 보낸 이름 데이터 : " + output_name);
 				//System.out.println(de.encrypt(output));
 				
 				instream.close();
 				instream2.close();
 				outstream.close();
+				outstream2.close();
 				socket.close();
 				count=0;
 				}
@@ -250,6 +285,7 @@ public class JavaSocketServer {
 	}
 
 }
+
 
 
 
@@ -293,5 +329,28 @@ class DataEncrypt {
 	}
 	
 
+}
+
+
+
+
+
+
+
+
+package org.androidtown.socket;
+
+public class Login {
+	String pw;
+	String name;
+	
+	public Login(){
+		this.pw = "?";
+		this.name = "??";
+	}
+	public Login(String pw, String name){
+		this.pw = pw;
+		this.name = name;
+	}
 }
 
