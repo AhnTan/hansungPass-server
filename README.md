@@ -322,3 +322,70 @@ public class JavaSocketServer {
 		}
 	}
 }
+
+
+
+
+
+
+package org.androidtown.socket;
+
+import java.security.MessageDigest;
+import java.security.DigestInputStream;
+import java.io.BufferedInputStream;
+
+class DataEncrypt {
+
+
+	public DataEncrypt(){
+		
+	}
+	
+	public String encrypt(String strData){
+		
+		MessageDigest m = null;
+	    String hash = null;
+	    try{
+	        m = MessageDigest.getInstance("MD5");
+	        m.update(strData.getBytes(),0,strData.length());
+	        byte tmp[]= m.digest();
+	        StringBuffer sb = new StringBuffer();
+	        for(int i=0;i<tmp.length;++i){
+	        	sb.append(String.format("%02X",0xff&tmp[i]));
+	        }
+	        hash = sb.toString();
+	    }
+	    catch (Exception e){  
+	    	e.printStackTrace(); 
+	    }
+	    return hash;
+
+	}
+	
+
+}
+
+
+
+
+
+
+package org.androidtown.socket;
+
+public class Login {
+	String pw;
+	String name;
+	String phone;
+	
+	public Login(){
+		this.pw = "?";
+		this.name = "??";
+		this.phone = "???";
+	}
+	public Login(String pw, String name, String phone){
+		this.pw = pw;
+		this.name = name;
+		this.phone = phone;
+	}
+}
+
