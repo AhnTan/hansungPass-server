@@ -24,6 +24,8 @@ public class JavaSocketServer {
 
 		int port = 80;
 
+		//String path = "C:\\Users\\hscom-017\\Desktop\\img";
+		
 		String qr = "ok";
 		HashMap<String, Login> login_id = new HashMap<String, Login>();
 		HashMap<String, String> h_md5 = new HashMap<String, String>();
@@ -32,6 +34,7 @@ public class JavaSocketServer {
 		login_id.put("1592017", new Login("123456", "송정은", "01055528461"));
 		login_id.put("1591033", new Login("123456", "진소린", "01074771488"));
 		login_id.put("1391080", new Login("123456", "한경동", "01066900694"));
+		login_id.put("1392080", new Login("123456", "최용석", "01082229352"));
 
 		Set<String> login_id_keys;
 		Iterator<String> login_id_iterator;
@@ -72,6 +75,7 @@ public class JavaSocketServer {
 				id_count=0;
 				logon_count=0;
 				
+				
 				// 클라이언트로 부터 데이터가 1개오면 input만
 				ObjectInputStream instream = new ObjectInputStream(socket.getInputStream());
 				Object input = instream.readObject();
@@ -88,6 +92,9 @@ public class JavaSocketServer {
 
 				System.out.println("concat 끝");
 
+				
+				
+				// 스캐너에서 데이터를 보낼때 처리하는 부분
 				if (input.toString().equals("scanner")) {
 					String compare = "%3B%3B";
 					String result;
@@ -115,6 +122,7 @@ public class JavaSocketServer {
 					}
 
 					else if (scanner_count == 1) {
+						System.out.println("input2 - " + input2);
 						String[] tokenList = input2.toString().split("%3B%3B");
 						scanner_id = tokenList[0];
 						System.out.println(tokenList[1]);
@@ -124,6 +132,7 @@ public class JavaSocketServer {
 
 						ObjectOutputStream outstream;
 
+						//QR코드를 보낼때 저장된 학번과 암호화값과 스캐너에서 보낸 값들과 비교
 						Set<String> keys = h_md5.keySet(); 
 						Iterator<String> it = keys.iterator();
 
@@ -136,8 +145,11 @@ public class JavaSocketServer {
 						}
 						
 						while (it.hasNext()) {
+							//System.out.println("success 전 + it.next 값 - " + it.next());
 							String key = it.next();
+							System.out.println("success 전 + key 값 - " + key);
 							String value = h_md5.get(key);
+							System.out.println("success 전  + value 값 - " + value);
 							System.out.println("aaaa");
 							// 해쉬맵에 저장된 값과 스캐너에서 받은 값이 같을경우 success리턴 (학번,암호화값)
 							if (key.equals(scanner_id)) {
@@ -146,31 +158,42 @@ public class JavaSocketServer {
 									outstream.writeObject("success");
 									outstream.flush();
 									System.out.println("최종 클라이언트로 보낸 데이터 : " + "success");
-									instream.close();
-									instream2.close();
+									//instream.close();
+									//instream2.close();
 									outstream.close();
-
+									System.out.println("success 후 1");
 									// 쓴 키값은 삭제해버림
 									h_md5.remove(key);
-								} else {
+									break;
+									
+									//System.out.println("success 후 2 : 해쉬 삭제");
+								} 
+								else {
 									outstream = new ObjectOutputStream(socket.getOutputStream());
 									outstream.writeObject("fail");
 									outstream.flush();
 									System.out.println("최종 클라이언트로 보낸 데이터 : " + "fail");
-									instream.close();
-									instream2.close();
+									//instream.close();
+									//instream2.close();
 									outstream.close();
 								}
+								System.out.println("success 후 3 ");
 							}
 						}
+						System.out.println("success 후 4 : instream 1 클로즈 ");
 						instream.close();
+						System.out.println("success 후 5 : instream 2 클로즈 ");
 						instream2.close();
-						socket.close();
-
+						//socket.close();
+						
+						//여기서 삭제해야됨
+						
 					}
+					System.out.println("success 후 6 : 스캐너 카운터 0 ");
 					scanner_count = 0;
 				}
 
+				/*
 				else if (concat.toString().length() > 68) {
 					System.out.println("콘캣들어옴");
 					String[] ReturnList = concat.toString().split("%3B%3B");
@@ -178,13 +201,21 @@ public class JavaSocketServer {
 					md5 = ReturnList[0]; // 학번
 					md6 = ReturnList[1]; // 날짜
 					md7 = ReturnList[2]; // md5암호화값
-
+					
+					System.out.println("MD55555555 : " + md5.toString());
+					System.out.println("MD66666666 : " + md6.toString());
+					System.out.println("MD77777777 : " + md7.toString());
 					// if문 -> 이미 md5, 즉 해당 학번에 해당하는 암호값이 있다면 변경
 					h_md5.put(md5, md7);
 				}
+				*/
 
+				
+				
+				// 첫 로그인화면 '허가' or '불허가' 체크하는 부분
 				if (!(input.toString().equals("send")) && !(input2.toString().equals("send"))
-						&& !(input.toString().equals("scanner"))) {
+						&& !(input.toString().equals("scanner")) && !(input.toString().equals("imgcall"))) 
+				{
 					System.out.println("kk2");
 					temp_id = input.toString();
 					System.out.println("kk2_1");
@@ -214,6 +245,11 @@ public class JavaSocketServer {
 								outstream.writeObject(check);
 								outstream.flush();
 								System.out.println("클라이언트로 보낸 데이터 : " + check);
+								
+								//OutputImg opi = new OutputImg(socket);
+								//opi.output(temp_id);
+								
+								
 								id_count = 1;
 								logon_count = 1;
 								instream.close();
@@ -240,7 +276,34 @@ public class JavaSocketServer {
 
 					id_count = 0;
 				}
-
+				
+				
+				
+				// 이미지 보내는 부분
+				if(input.toString().equals("imgcall")){
+					check = "이미지콜 중";
+					ObjectOutputStream outstream = new ObjectOutputStream(socket.getOutputStream());
+					outstream.writeObject(check);
+					outstream.flush();
+					System.out.println("클라이언트로 보낸 데이터 : " + check);
+					
+					System.out.println("이미지콜 시작");
+					
+			
+					OutputImg opi = new OutputImg(socket);
+					opi.output(temp_id);
+					
+					System.out.println("이미지콜 끝");
+					
+					instream.close();
+					instream2.close();
+					outstream.close();
+				}
+				
+				
+				
+				
+				// 위 메인액티비티와 이미지부분이 안돌아가면 이 아래코드가 돌아감 == QR코드값 부분
 				/******* 중요부분 ********/
 				// 기존 학번에 대한 암호화값이 들어있으면 덮어씌워야함
 				System.out.println("1-0");
@@ -263,9 +326,9 @@ public class JavaSocketServer {
 					
 					// temp 부분은 MD5로 값 변환시킴
 					temp = de.encrypt(output2+s);
-					output = output2 + "%3B%3B" + temp;
+					//output = output2 + "%3B%3B" + temp;
 					//output = temp;
-					
+					output = output2 + "%3B%3B" + temp;
 					
 					String[] ReturnList2 = output2.toString().split("%3B%3B");
 
@@ -288,6 +351,9 @@ public class JavaSocketServer {
 							output_id = id_key;
 							output_name = login_id.get(id_key).name;
 
+							//OutputImg opi = new OutputImg(socket);
+							//opi.output();
+							
 						}
 					}
 					System.out.println("1-1");
@@ -308,20 +374,30 @@ public class JavaSocketServer {
 					outstream3.flush();
 					System.out.println("클라이언트로 보낸 이름 데이터 : " + output_name);
 					System.out.println("1-5");
+					
+					/*
+					OutputImg opi = new OutputImg(socket);
+					opi.output();
+					*/
+					
 					instream.close();
 					instream2.close();
 					outstream.close();
 					outstream2.close();
+					outstream3.close();
 					//socket.close();
 					count = 0;
 				}
-			}
+			}// <-- while문 끝나는 부분
 
 		} catch (Exception e) {
-
+			System.out.println("오류");
+			e.printStackTrace();
 		}
 	}
 }
+
+
 
 
 
@@ -370,6 +446,8 @@ class DataEncrypt {
 
 
 
+
+
 package org.androidtown.socket;
 
 public class Login {
@@ -389,3 +467,96 @@ public class Login {
 	}
 }
 
+
+
+
+
+
+
+
+package org.androidtown.socket;
+
+
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Random;
+import java.util.Set;
+import java.util.Vector;
+import java.awt.*;
+
+
+public class OutputImg {
+	String path = "C:\\Users\\hscom-017\\Desktop\\img";
+	Socket socket;
+	
+	public OutputImg(Socket socket){
+		this.socket = socket;
+	}
+	
+	public void output(String temp_id){
+		String id = temp_id + ".jpg";
+		File[] files = new File(path).listFiles(); // path경로에있는 파일 모두 읽어들임
+
+		try { 
+			BufferedOutputStream bos = new BufferedOutputStream(socket.getOutputStream());
+
+			DataOutputStream dos = new DataOutputStream(bos);
+
+			//dos.writeInt(files.length);  //파일 갯수 출력합니다.
+			//System.out.println("경로에 있는 총 파일 갯수 : " + files.length);
+			
+		
+			dos.writeInt(1);  //보낼 파일 갯수 입력합니다.   -- 여기선 한개만 보내겠다.
+			
+			for (File file : files) {
+			
+			
+				String name = file.getName();	 
+
+				if(id.equals(name)){
+					long length = file.length();
+					dos.writeLong(length);    //파일 길이 출력합니다. 
+					System.out.println();
+
+				System.out.println("보낸파일 = " + file.getName()); //파일 이름 출력합니다.
+				dos.writeUTF(name);
+
+				FileInputStream fis = new FileInputStream(file);
+				BufferedInputStream bis = new BufferedInputStream(fis);	 
+
+				int theByte = 0;
+
+				while ((theByte = bis.read()) != -1) // BufferedInputStream으로// 클라이언트에 보내기 위해 write함니다.
+
+				{
+					// System.out.println(file.getName()+"보냄");
+					bos.write(theByte);	
+				}
+
+				//bos.flush();
+
+				System.out.println("송신완료");				
+
+				//bis.close();
+				break;
+				}
+			}
+			dos.flush();	 
+
+		} catch (Exception e) {
+
+			e.printStackTrace();
+
+		}
+	}
+	
+}
