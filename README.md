@@ -92,7 +92,35 @@ public class JavaSocketServer {
 
 				System.out.println("concat 끝");
 
+					
+				//NFC 데이터 부분
+				if(input.toString().equals("nfc")){
+					//String nfc_check = nfc.datacheck(concat);
 				
+					check = nfc.datacheck(concat);
+					System.out.println("NFCNFCNFC : " + check);
+				
+					ObjectOutputStream outstream = new ObjectOutputStream(socket.getOutputStream());
+					outstream.writeObject(check);
+					outstream.flush();
+					
+					id_count = 1;
+					logon_count = 1;
+					instream.close();
+					instream2.close();
+					outstream.close();
+				
+				/*	ObjectOutputStream outstream = new ObjectOutputStream(socket.getOutputStream());
+					outstream.writeObject(check);
+					outstream.flush();
+				
+					id_count = 1;
+					logon_count = 1;
+					instream.close();
+					instream2.close();
+					outstream.close();	*/
+				
+			}
 				
 				// 스캐너에서 데이터를 보낼때 처리하는 부분
 				if (input.toString().equals("scanner")) {
@@ -560,3 +588,71 @@ public class OutputImg {
 	}
 	
 }
+
+
+
+
+
+
+
+
+import java.io.ObjectOutputStream;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Set;
+
+public class NFCCheck {
+	HashMap<String, Login> login_id = new HashMap<String, Login>();
+	Set<String> login_id_keys;
+	Iterator<String> login_id_iterator;
+	
+	String check = null;
+	
+	public NFCCheck(HashMap<String, Login> login_id){
+		this.login_id = login_id;
+		this.login_id_keys = login_id.keySet();
+		this.login_id_iterator = login_id_keys.iterator();
+	}
+	
+	public String datacheck(String nfcdata){
+		
+		this.login_id_keys = login_id.keySet();
+		this.login_id_iterator = login_id_keys.iterator();
+		
+		String nfcdata_list[] = nfcdata.split("%3B%3B");
+		
+		// 0번째 - nfc , 1번째 - nfcData , 2번째 - nfcTagId , 3번째 - 학번(id) , 4번째 - password , 5번째 - 전화번호  
+		for(int i=0; i<nfcdata_list.length; i++){
+			System.out.println("NFC_Check - " + i + "번째 : " + nfcdata_list[i].toString());
+		}
+	
+		
+		while (login_id_iterator.hasNext()) {
+			String id_key = login_id_iterator.next();
+			String id_value = login_id.get(id_key).pw;
+			String id_value2 = login_id.get(id_key).phone;
+			System.out.println("nfc아이디 : " + nfcdata_list[3]);
+			if (id_key.equals(nfcdata_list[3])) {
+				System.out.println("nfc비번 : " + nfcdata_list[4]);
+				System.out.println("nfc전화번호 :" + nfcdata_list[5]);
+				if (id_value.equals(nfcdata_list[4]) && id_value2.equals(nfcdata_list[5])){
+					System.out.println("nfc태그 :" + nfcdata_list[2]);
+					if("36113665213982980".equals(nfcdata_list[2])){
+						check = "nfcOK";
+						break;
+					}
+					else{
+						check = "nfcNOK";
+						break;
+					}
+				}
+				
+			}else{
+				check = "불허가";
+			}
+		}
+		//System.out.println("nfc이터레이트 : " + login_id_iterator.next().toString());
+		return check;
+	}
+}
+
